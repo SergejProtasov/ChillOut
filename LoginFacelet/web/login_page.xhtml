@@ -11,11 +11,13 @@
 
 <f:view>
     <h:outputText value="Your login and password"/><br/><br/>
+    <h:form>
     <h:outputText value="Login:     "/>
     <h:inputText size = "20"/><br/><br/>
     <h:outputText value="Password:  "/>
     <h:inputSecret size="20"/><br/><br/>
-    <h:commandButton value = "Enter"/>
-    <h:commandButton value = "Cancel"/>
+    <h:commandButton action="result" value = "Enter"/>
+    <h:commandButton action="index" value = "Cancel"/>
+    </h:form>
 </f:view>
 </html>
