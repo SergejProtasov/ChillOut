@@ -1,74 +1,63 @@
-/**
- * Created by Дом on 05.11.2015.
- */
 
-import com.mysql.fabric.jdbc.FabricMySQLDriver;
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 import org.apache.commons.codec.digest.DigestUtils;
 
+
 import java.sql.*;
+import java.sql.Connection;
+import java.sql.Statement;
 
 public class DatabaseBean{
     private String rLogin = "root";
     private String rPassword = "root";
-    private String URL = "jdbs:mysql://localhost:3306/ids/users";
+    private String URL = "jdbc:mysql://localhost:3306/ids";
 
     protected DatabaseBean(){}
     protected DatabaseBean(String rLogin, String rPassword, String URL) {
         try{
-
-            //Connection connection = driver.connect(URL+"?"+"user="+rLogin+"&"+"password="+rPassword,null);
+            Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
-            //MysqlDataSource dataSource = new MysqlDataSource();
-            //dataSource.setUser(rLogin);
-            //dataSource.setPassword(rPassword);
-            //dataSource.setURL(URL);
-            //connection = dataSource.getConnection();
-            if(connection.isClosed()){
-                throw new SQLException();
-            }
             connection.close();
+            this.rLogin = rLogin;
+            this.rPassword = rPassword;
+            this.URL = URL;
         }
-        catch (SQLException e){
+        catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Database isn't reached.");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
-        this.rLogin = rLogin;
-        this.rPassword = rPassword;
-        this.URL = URL;
     }
 
-    private final ResultSet createQuery(Statement statement, String login, String password) throws SQLException{
-        String tblname = URL.substring(URL.lastIndexOf("/")+1);
-        String query = "select * from "+tblname+" where login = "+login+" and passwrd = " + password;
+    private final ResultSet createQuery(Statement statement) throws SQLException{
+        String tblname = "users";
+        String query = "select * from users";
 
         ResultSet set = statement.executeQuery(query);
         return set;
     }
 
     protected boolean isValidUser(String login, String password){
-        String shalogin = DigestUtils.sha1Hex(login);
-        String shapassword = DigestUtils.sha1Hex(password);
-
-
+        //String shalogin = DigestUtils.sha1Hex(login);
+        //String shapassword = DigestUtils.sha1Hex(password);
+        String shalogin = login;
+        String shapassword = password;
         int count = 0;
 
         try{
-            Connection connection;
-            MysqlDataSource dataSource = new MysqlDataSource();
-            dataSource.setUser(rLogin);
-            dataSource.setPassword(rPassword);
-            dataSource.setURL(URL);
-            connection = dataSource.getConnection();
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
 
             Statement statement = connection.createStatement();
-            ResultSet set = createQuery(statement,shalogin,shapassword);
-            statement.close();
-            connection.close();
+            ResultSet set = createQuery(statement);
 
             while(set.next()){
-                count ++;
+                if(set.getString("login").equals(shalogin) && set.getString("passwrd").equals(shapassword)) {
+                    count++;
+                }
             }
+            statement.close();
+            connection.close();
         }
         catch (SQLException e){
             e.printStackTrace();
@@ -76,7 +65,8 @@ public class DatabaseBean{
         }
         catch (NullPointerException k){
             k.printStackTrace();
-            return false;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
         }
 
         return (count == 1);

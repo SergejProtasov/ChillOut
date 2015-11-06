@@ -1,16 +1,6 @@
 import java.io.Serializable;
 
-/**
- * Created by Дом on 03.11.2015.
- */
-public class ValidatorBean implements Serializable{
-    //private String uLogin = "Lock";
-    //private String uPassword = "admin";
-
-    //private String rLogin;
-    //private String rPassword;
-    //private String URL;
-
+ class ValidatorBean implements Serializable{
     private String login;
     private String password;
 
@@ -31,7 +21,7 @@ public class ValidatorBean implements Serializable{
     }
 
     public boolean result(){
-        DatabaseBean databaseBean = new DatabaseBean("root", "root", "jdbs:mysql://localhost:3306/ids");
+        DatabaseBean databaseBean = new DatabaseBean();
         return databaseBean.isValidUser(login,password);
     }
 }
