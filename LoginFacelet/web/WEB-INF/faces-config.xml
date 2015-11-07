@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<faces-config version="2.2" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+    http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
+
+    <managed-bean>
+        <managed-bean-name>validatorBean</managed-bean-name>
+        <managed-bean-class>ValidatorBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>workDBBean</managed-bean-name>
+        <managed-bean-class>WorkDBBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <navigation-rule>
+        <from-view-id>/login_page.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>index</from-outcome>
+            <to-view-id>/index.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>false</from-outcome>
+            <to-view-id>/error_login.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>true</from-outcome>
+            <to-view-id>/next_step.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+</faces-config>
