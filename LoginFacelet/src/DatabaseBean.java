@@ -40,11 +40,12 @@ public class DatabaseBean {
     }
 
     private final User saulting(User user) {
+        User res = user;
         String login = DigestUtils.sha1Hex(user.getSault()+user.getLogin());
         String password = DigestUtils.sha1Hex(user.getPassword()+user.getSault());
-        user.setLogin(login);
-        user.setPassword(password);
-        return user;
+        res.setLogin(login);
+        res.setPassword(password);
+        return res;
     }
 
     private final User searchUser(String login, String password){
@@ -58,13 +59,13 @@ public class DatabaseBean {
 
             while(set.next()){
                 user1 = new User(set.getString("firstName"),set.getString("lastName"), set.getString("login"), set.getString("passwrd"),set.getString("sault"));
+                User user2 = new User(set.getString("firstName"),set.getString("lastName"), login, password,set.getString("sault"));
 
-                User user2 = user1;
-                user2.setLogin(login);
-                user2.setPassword(password);
-                if(user1.equals(saulting(user2))){
+                user2 = saulting(user2);
+                if(user1.getLogin().equals(user2.getLogin())&&user1.getPassword().equals(user2.getPassword())){
                     break;
                 }
+                user1 = null;
             }
             set.close();
             statement.close();
@@ -84,8 +85,6 @@ public class DatabaseBean {
     }
 
     protected boolean isValidUser(String login, String password){
-        //String shalogin = DigestUtils.sha1Hex(login);
-        //String shapassword = DigestUtils.sha1Hex(password);
         User res = searchUser(login,password);
         return (res != null);
     }
@@ -107,18 +106,20 @@ public class DatabaseBean {
         preparedStatement.close();
     }
 
-    protected void addUser(User user){
+    protected boolean addUser(User user){
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
 
             insertUser(connection,user);
             connection.close();
+            return true;
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     protected void deleteUser(){

@@ -10,21 +10,9 @@
 <f:view>
     <h:outputLabel value = "Hello, world"/>
     <h:form>
-        <h:commandButton action = "#{workDBBean.setStartAdd}" value = "Add user"/><br/><br/>
+        <h:commandButton action = "add_user" value = "Add user"/><br/><br/>
         <h:commandButton action = "delete" value = "Delete user"/><br/><br/>
-        <h:commandButton action = "index" value = "Exit"/>
-        <c:if test="#{workDBBean.isStartAdd}"><br/><br/>
-            <h:outputText value=" Firstname          "/>
-            <h:inputText value = "#{workDBBean.firstname}" size="20"/><br/><br/>
-            <h:outputText value="   Lastname         "/>
-            <h:inputText value = "#{workDBBean.lastname}" size="20"/><br/><br/>
-            <h:outputText value="   Login            "/>
-            <h:inputText value = "#{workDBBean.login}" size="20"/><br/><br/>
-            <h:outputText value="   Password         "/>
-            <h:inputSecret value = "#{workDBBean.password}" size="20"/><br/><br/>
-            <h:outputText value="   Confirm password "/>
-            <h:inputSecret value = "#{workDBBean.confPassword}" size="20"/><br/><br/>
-        </c:if>
+        <h:commandButton action = "login_page" value = "Exit"/>
     </h:form>
 </f:view>
 </html>

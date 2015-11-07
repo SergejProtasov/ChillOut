@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<f:view>
+    <h:form>
+            <h:outputText value="   Firstname         "/>
+            <h:inputText value = "#{workDBBean.firstname}" size="20"/><br/><br/>
+            <h:outputText value="   Lastname         "/>
+            <h:inputText value = "#{workDBBean.lastname}" size="20"/><br/><br/>
+            <h:outputText value="   Login            "/>
+            <h:inputText value = "#{workDBBean.login}" size="20"/><br/><br/>
+            <h:outputText value="   Password         "/>
+            <h:inputSecret value = "#{workDBBean.password}" size="20"/><br/><br/>
+            <h:outputText value="   Confirm password "/>
+            <h:inputSecret value = "#{workDBBean.confPassword}" size="20"/><br/><br/>
+            <h:commandButton action = "#{workDBBean.startWorkAdd}" value = "Ok"/>
+            <h:commandButton action = "next_step" value = "Cancel"/>
+    </h:form>
+</f:view>
+</html>

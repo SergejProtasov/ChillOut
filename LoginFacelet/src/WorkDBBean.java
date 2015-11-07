@@ -1,29 +1,26 @@
 import java.io.Serializable;
 
 public class WorkDBBean implements Serializable{
-    private boolean startAdd = false;
-    private boolean startDel = false;
-
     private String firstname;
     private String lastname;
     private String login;
     private String password;
     private String confPassword;
 
-    public boolean isStartAdd() {
-        return startAdd;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setStartAdd(boolean startAdd) {
-        this.startAdd = true;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public boolean isStartDel(){
-        return startDel;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setStartDel(boolean startDel){
-        this.startDel = startDel;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getLogin() {
@@ -50,20 +47,14 @@ public class WorkDBBean implements Serializable{
         this.confPassword = confPassword;
     }
 
-    public void startWork(){
+    public boolean startWorkAdd(){
         if(!password.equals(confPassword)){
-            return;
+            return false;
         }
 
         DatabaseBean databaseBean = new DatabaseBean();
-        if(startAdd){
-            User user = new User(firstname,lastname,login,password,null);
-            databaseBean.addUser(user);
-            startAdd = false;
-        }
-        if(startDel){
-            databaseBean.deleteUser();
-            startDel = false;
-        }
+        User user = new User(firstname,lastname,login,password,null);
+        return databaseBean.addUser(user);
+
     }
 }
