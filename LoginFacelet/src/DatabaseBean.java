@@ -5,23 +5,25 @@ import org.apache.commons.codec.digest.DigestUtils;
 import java.sql.*;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Random;
 
-public class DatabaseBean{
+public class DatabaseBean {
     private String rLogin = "root";
     private String rPassword = "root";
     private String URL = "jdbc:mysql://localhost:3306/ids";
 
-    protected DatabaseBean(){}
+    protected DatabaseBean() {
+    }
+
     protected DatabaseBean(String rLogin, String rPassword, String URL) {
-        try{
+        try {
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
+            Connection connection = DriverManager.getConnection(URL, rLogin, rPassword);
             connection.close();
             this.rLogin = rLogin;
             this.rPassword = rPassword;
             this.URL = URL;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Database isn't reached.");
         } catch (ClassNotFoundException e) {
@@ -29,39 +31,48 @@ public class DatabaseBean{
         }
     }
 
-    private final ResultSet createQuery(Statement statement) throws SQLException{
+    private final ResultSet createQuery(Statement statement) throws SQLException {
         String tblname = "users";
-        String query = "select * from users";
+        String query = "SELECT * FROM users";
 
         ResultSet set = statement.executeQuery(query);
         return set;
     }
 
-    protected boolean isValidUser(String login, String password){
-        //String shalogin = DigestUtils.sha1Hex(login);
-        //String shapassword = DigestUtils.sha1Hex(password);
-        String shalogin = login;
-        String shapassword = password;
-        int count = 0;
+    private final User saulting(User user) {
+        String login = DigestUtils.sha1Hex(user.getSault()+user.getLogin());
+        String password = DigestUtils.sha1Hex(user.getPassword()+user.getSault());
+        user.setLogin(login);
+        user.setPassword(password);
+        return user;
+    }
 
+    private final User searchUser(String login, String password){
         try{
             Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
 
             Statement statement = connection.createStatement();
             ResultSet set = createQuery(statement);
+            User user1 = null;
 
             while(set.next()){
-                if(set.getString("login").equals(shalogin) && set.getString("passwrd").equals(shapassword)) {
-                    count++;
+                user1 = new User(set.getString("firstName"),set.getString("lastName"), set.getString("login"), set.getString("passwrd"),set.getString("sault"));
+
+                User user2 = user1;
+                user2.setLogin(login);
+                user2.setPassword(password);
+                if(user1.equals(saulting(user2))){
+                    break;
                 }
             }
+            set.close();
             statement.close();
             connection.close();
+            return user1;
         }
         catch (SQLException e){
             e.printStackTrace();
-            return false;
         }
         catch (NullPointerException k){
             k.printStackTrace();
@@ -69,11 +80,45 @@ public class DatabaseBean{
             e.printStackTrace();
         }
 
-        return (count == 1);
+        return null;
     }
 
-    protected void addUser(){
+    protected boolean isValidUser(String login, String password){
+        //String shalogin = DigestUtils.sha1Hex(login);
+        //String shapassword = DigestUtils.sha1Hex(password);
+        User res = searchUser(login,password);
+        return (res != null);
+    }
 
+    private void insertUser(Connection connection, User user) throws SQLException {
+        String insert = "INSERT INTO users VALUES(?,?,?,?,?)";
+        Random random = new Random();
+        user.setSault(random.nextLong());
+        User res = saulting(user);
+
+        PreparedStatement preparedStatement = connection.prepareStatement(insert);
+        preparedStatement.setString(1,res.getFirstName());
+        preparedStatement.setString(2,res.getLastName());
+        preparedStatement.setString(3,res.getLogin());
+        preparedStatement.setString(4,res.getPassword());
+        preparedStatement.setString(5,res.getSault());
+
+        preparedStatement.execute();
+        preparedStatement.close();
+    }
+
+    protected void addUser(User user){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
+
+            insertUser(connection,user);
+            connection.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     protected void deleteUser(){

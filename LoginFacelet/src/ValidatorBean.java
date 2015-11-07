@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
- class ValidatorBean implements Serializable{
+ public class ValidatorBean implements Serializable{
     private String login;
     private String password;
 
