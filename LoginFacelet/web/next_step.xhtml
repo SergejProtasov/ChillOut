@@ -7,12 +7,18 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
         xmlns:c = "http://java.sun.com/jsp/jstl/core">
 
+<head>
+    <title>Main page</title>
+</head>
+
 <f:view>
     <h:outputLabel value = "Hello, world"/>
     <h:form>
         <h:commandButton action = "add_user" value = "Add user"/><br/><br/>
-        <h:commandButton action = "delete" value = "Delete user"/><br/><br/>
-        <h:commandButton action = "login_page" value = "Exit"/>
+        <h:commandButton action = "delete_user" value = "Delete user"/><br/><br/>
+        <h:commandButton action = "login_page" value = "Exit"/><br/><br/><br/><br/><br/><br/>
+
+        <h:commandButton action = "work" value = "Work"/>
     </h:form>
 </f:view>
 </html>

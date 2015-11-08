@@ -21,7 +21,7 @@ import java.io.Serializable;
     }
 
     public boolean result(){
-        DatabaseBean databaseBean = new DatabaseBean();
-        return databaseBean.isValidUser(login,password);
+        Database database = new Database();
+        return database.isValidUser(login,password);
     }
 }

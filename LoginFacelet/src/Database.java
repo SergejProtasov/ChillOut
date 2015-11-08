@@ -1,21 +1,22 @@
 
+import dataclasses.User;
 import org.apache.commons.codec.digest.DigestUtils;
-
 
 import java.sql.*;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Random;
 
-public class DatabaseBean {
+public class Database {
     private String rLogin = "root";
     private String rPassword = "root";
     private String URL = "jdbc:mysql://localhost:3306/ids";
 
-    protected DatabaseBean() {
+    protected Database() {
     }
 
-    protected DatabaseBean(String rLogin, String rPassword, String URL) {
+    protected Database(String rLogin, String rPassword, String URL) {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection(URL, rLogin, rPassword);
@@ -32,7 +33,6 @@ public class DatabaseBean {
     }
 
     private final ResultSet createQuery(Statement statement) throws SQLException {
-        String tblname = "users";
         String query = "SELECT * FROM users";
 
         ResultSet set = statement.executeQuery(query);
@@ -122,7 +122,55 @@ public class DatabaseBean {
         return false;
     }
 
-    protected void deleteUser(){
+    protected void deleteUser(String firstname, String lastname){
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
 
+            String delete = "Delete from users where firstName = ? and lastName = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(delete);
+            preparedStatement.setString(1,firstname);
+            preparedStatement.setString(2,lastname);
+            preparedStatement.execute();
+
+            preparedStatement.close();
+            connection.close();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        catch (NullPointerException k){
+            k.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected  ArrayList<User> showUserDB(){
+        try{
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection connection = DriverManager.getConnection(URL,rLogin,rPassword);
+
+            Statement statement = connection.createStatement();
+            ResultSet set = createQuery(statement);
+            ArrayList<User> arrayList = new ArrayList<User>();
+            while(set.next()){
+                User user1 = new User(set.getString("firstName"),set.getString("lastName"), null, null, null);
+                arrayList.add(user1);
+            }
+            set.close();
+            statement.close();
+            connection.close();
+            return arrayList;
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        catch (NullPointerException k){
+            k.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

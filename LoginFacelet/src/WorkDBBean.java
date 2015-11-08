@@ -1,3 +1,5 @@
+import dataclasses.User;
+
 import java.io.Serializable;
 
 public class WorkDBBean implements Serializable{
@@ -52,9 +54,14 @@ public class WorkDBBean implements Serializable{
             return false;
         }
 
-        DatabaseBean databaseBean = new DatabaseBean();
+        Database database = new Database();
         User user = new User(firstname,lastname,login,password,null);
-        return databaseBean.addUser(user);
+        return database.addUser(user);
 
+    }
+
+    public void startWorkDel(){
+        Database database = new Database();
+        database.deleteUser(firstname,lastname);
     }
 }

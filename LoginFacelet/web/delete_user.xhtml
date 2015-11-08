@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c = "http://java.sun.com/jsp/jstl/core">
+
+<head>
+    <title>Delete user</title>
+</head>
+
+<f:view>
+    <h:form>
+        <h:outputText value ="Firstname:    "/>
+        <h:inputText value ="#{workDBBean.firstname}" size = "20"/><br/><br/>
+        <h:outputText value ="Lastname:     "/>
+        <h:inputSecret value ="#{workDBBean.lastname}" size="20"/><br/><br/>
+        <h:commandButton action = "#{workDBBean.startWorkDel}" value = "Delete"/>
+        <h:commandButton action = "next_step" value = "Exit"/><br/><br/>
+    </h:form>
+
+    <h:outputText value = "Current users:"/><br/><br/>
+    <c:forEach var = "i" begin="0" end="#{userDataBean.amountLine()-1}">
+        <h:outputText value = "#{i+1}   "/>
+        <h:outputText value = "#{userDataBean.getLine(i)}"/><br/><br/>
+    </c:forEach>
+</f:view>
+</html>
