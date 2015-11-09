@@ -21,17 +21,16 @@ public class UserFilter implements Filter{
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         HttpSession session = httpRequest.getSession(false);
         if(session!=null){
-            SessionBean userAutorisationBean = null;
-            userAutorisationBean = (SessionBean) session.getAttribute("sessionBean");
+            SessionBean userAutorisationBean = (SessionBean) session.getAttribute("sessionBean");
             if(userAutorisationBean!=null){
                 if(userAutorisationBean.result()){
                     chain.doFilter(request, response);
                 }
             }
-            httpResponse.sendRedirect("login_page.xhtml");
+            httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
         }
         if(session == null){
-            httpResponse.sendRedirect("login_page.xhtml");
+            httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
         }
     }
 
