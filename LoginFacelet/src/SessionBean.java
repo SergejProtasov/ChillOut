@@ -1,8 +1,19 @@
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 
- public class ValidatorBean implements Serializable{
+@ManagedBean(name = "sessionBean")
+@SessionScoped
+ public class SessionBean implements Serializable{
     private String login;
     private String password;
+
+    public SessionBean() {
+            login = "guest";
+            password = "guest";
+    }
 
     public String getLogin() {
         return login;
@@ -22,6 +33,8 @@ import java.io.Serializable;
 
     public boolean result(){
         Database database = new Database();
-        return database.isValidUser(login,password);
+        boolean res = database.isValidUser(login,password);
+
+        return res;
     }
 }

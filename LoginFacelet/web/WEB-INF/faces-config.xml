@@ -5,9 +5,9 @@
     http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
 
     <managed-bean>
-        <managed-bean-name>validatorBean</managed-bean-name>
-        <managed-bean-class>ValidatorBean</managed-bean-class>
-        <managed-bean-scope>request</managed-bean-scope>
+        <managed-bean-name>sessionBean</managed-bean-name>
+        <managed-bean-class>SessionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
     <managed-bean>
         <managed-bean-name>workDBBean</managed-bean-name>
@@ -27,18 +27,25 @@
         </navigation-case>
         <navigation-case>
             <from-outcome>true</from-outcome>
-            <to-view-id>/next_step.xhtml</to-view-id>
+            <to-view-id>/users/next_step.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
-        <from-view-id>/add_user.xhtml</from-view-id>
+        <from-view-id>/users/add_user.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>false</from-outcome>
-            <to-view-id>/add_user.xhtml</to-view-id>
+            <to-view-id>/users/add_user.xhtml</to-view-id>
         </navigation-case>
         <navigation-case>
             <from-outcome>true</from-outcome>
-            <to-view-id>/next_step.xhtml</to-view-id>
+            <to-view-id>/users/next_step.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/users/next_step.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>exit</from-outcome>
+            <to-view-id>/login_page.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
 </faces-config>
