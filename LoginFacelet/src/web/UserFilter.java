@@ -1,3 +1,5 @@
+package web;
+
 import java.io.IOException;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -25,11 +27,14 @@ public class UserFilter implements Filter{
             if(userAutorisationBean!=null){
                 if(userAutorisationBean.result()){
                     chain.doFilter(request, response);
+                }else{
+                    httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
                 }
+            }else{
+                httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
             }
-            httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
         }
-        if(session == null){
+        else {
             httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
         }
     }

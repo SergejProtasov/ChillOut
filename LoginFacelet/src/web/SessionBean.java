@@ -1,6 +1,8 @@
-import dataclasses.DatabaseConnection;
-import dataclasses.Salt;
-import dataclasses.User;
+package web;
+
+import web.dataclasses.DatabaseConnection;
+import web.dataclasses.Salt;
+import web.dataclasses.User;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -33,7 +35,7 @@ public class SessionBean implements Serializable{
         this.login = login;
     }
 
-    private User searchUser(String login, String password) {
+    private boolean searchUser(String login, String password) {
         DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
         Connection connection = databaseConnection.getConnection();
 
@@ -49,20 +51,27 @@ public class SessionBean implements Serializable{
                 loginer.setPassword(password);
                 Salt.salting(loginer);
                 if(loginer.equals(user)){
-                    break;
+                    set.close();
+                    statement.close();
+                    return true;
                 }
             }
             set.close();
             statement.close();
-            return user;
+            return false;
         }catch(SQLException e){
             e.printStackTrace();
         }
-        return null;
+        return false;
     }
 
     public boolean result(){
-        User res = searchUser(login,password);
-        return (res != null);
+        return searchUser(login,password);
+    }
+
+    public String exit(){
+        login = "guest";
+        password = "guest";
+        return "exit";
     }
 }

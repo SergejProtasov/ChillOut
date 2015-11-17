@@ -6,17 +6,17 @@
 
     <managed-bean>
         <managed-bean-name>sessionBean</managed-bean-name>
-        <managed-bean-class>SessionBean</managed-bean-class>
+        <managed-bean-class>web.SessionBean</managed-bean-class>
         <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
     <managed-bean>
         <managed-bean-name>workDBBean</managed-bean-name>
-        <managed-bean-class>WorkDBBean</managed-bean-class>
+        <managed-bean-class>web.WorkDBBean</managed-bean-class>
         <managed-bean-scope>request</managed-bean-scope>
     </managed-bean>
     <managed-bean>
         <managed-bean-name>userDataBean</managed-bean-name>
-        <managed-bean-class>UserDataBean</managed-bean-class>
+        <managed-bean-class>web.UserDataBean</managed-bean-class>
         <managed-bean-scope>request</managed-bean-scope>
     </managed-bean>
     <navigation-rule>

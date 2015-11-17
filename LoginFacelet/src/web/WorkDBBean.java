@@ -1,11 +1,12 @@
-import dataclasses.DatabaseConnection;
-import dataclasses.Salt;
-import dataclasses.User;
+package web;
+
+import web.dataclasses.DatabaseConnection;
+import web.dataclasses.Salt;
+import web.dataclasses.User;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.sql.*;
-import java.util.ArrayList;
 
 public class WorkDBBean implements Serializable{
     private String firstname;

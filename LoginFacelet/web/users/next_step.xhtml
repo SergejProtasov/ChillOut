@@ -18,7 +18,7 @@
         <h2><h:outputText value = "User space:"/><br/><br/></h2>
         <h:commandButton action = "add_user" value = "Add user"/><br/><br/>
         <h:commandButton action = "delete_user" value = "Delete user"/><br/><br/>
-        <h:commandButton action = "exit" value = "Exit"/>
+        <h:commandButton action = "#{sessionBean.exit()}" value = "Exit"/>
     </h:form>
 </f:view>
 </html>

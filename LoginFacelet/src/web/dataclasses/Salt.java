@@ -1,4 +1,4 @@
-package dataclasses;
+package web.dataclasses;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
