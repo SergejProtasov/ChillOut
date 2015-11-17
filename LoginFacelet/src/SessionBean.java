@@ -1,12 +1,14 @@
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.servlet.http.HttpServletResponse;
-import java.io.Serializable;
+import dataclasses.DatabaseConnection;
+import dataclasses.Salt;
+import dataclasses.User;
 
-@ManagedBean(name = "sessionBean")
-@SessionScoped
- public class SessionBean implements Serializable{
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class SessionBean implements Serializable{
     private String login;
     private String password;
 
@@ -31,10 +33,36 @@ import java.io.Serializable;
         this.login = login;
     }
 
-    public boolean result(){
-        Database database = new Database();
-        boolean res = database.isValidUser(login,password);
+    private User searchUser(String login, String password) {
+        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
+        Connection connection = databaseConnection.getConnection();
 
-        return res;
+        try {
+            String select = "SELECT * FROM users where login = "+login;
+            Statement statement = connection.createStatement();
+
+            ResultSet set = statement.executeQuery(select);
+            User user = null;
+            while (set.next()) {
+                user = new User(set.getString("firstName"),set.getString("lastName"),set.getString("login"),set.getString("passwrd"),set.getString("salt"));
+                User loginer = user;
+                loginer.setPassword(password);
+                Salt.salting(loginer);
+                if(loginer.equals(user)){
+                    break;
+                }
+            }
+            set.close();
+            statement.close();
+            return user;
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public boolean result(){
+        User res = searchUser(login,password);
+        return (res != null);
     }
 }

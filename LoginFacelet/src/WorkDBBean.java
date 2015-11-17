@@ -1,6 +1,11 @@
+import dataclasses.DatabaseConnection;
+import dataclasses.Salt;
 import dataclasses.User;
 
 import java.io.Serializable;
+import java.security.SecureRandom;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class WorkDBBean implements Serializable{
     private String firstname;
@@ -49,19 +54,64 @@ public class WorkDBBean implements Serializable{
         this.confPassword = confPassword;
     }
 
+    private void insertUser(Connection connection, User user) throws SQLException {
+        String insert = "INSERT INTO users VALUES(?,?,?,?,?)";
+        SecureRandom random = new SecureRandom();
+        user.setSault(random.nextLong());
+        Salt.salting(user);
+
+        PreparedStatement preparedStatement = connection.prepareStatement(insert);
+        preparedStatement.setString(1,user.getFirstName());
+        preparedStatement.setString(2,user.getLastName());
+        preparedStatement.setString(3,user.getLogin());
+        preparedStatement.setString(4,user.getPassword());
+        preparedStatement.setString(5,user.getSault());
+
+        preparedStatement.execute();
+        preparedStatement.close();
+    }
+
+    private boolean addUser(User user){
+        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
+        Connection connection = databaseConnection.getConnection();
+        try {
+            insertUser(connection,user);
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public boolean startWorkAdd(){
         if(!password.equals(confPassword)){
             return false;
         }
 
-        Database database = new Database();
         User user = new User(firstname,lastname,login,password,null);
-        return database.addUser(user);
+        return addUser(user);
 
     }
 
+    private void deleteUser(String firstname, String lastname){
+        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
+        Connection connection = databaseConnection.getConnection();
+
+        try{
+            String delete = "Delete from users where firstName = ? and lastName = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(delete);
+            preparedStatement.setString(1,firstname);
+            preparedStatement.setString(2,lastname);
+            preparedStatement.execute();
+
+            preparedStatement.close();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+    }
+
     public void startWorkDel(){
-        Database database = new Database();
-        database.deleteUser(firstname,lastname);
+        deleteUser(firstname,lastname);
     }
 }
