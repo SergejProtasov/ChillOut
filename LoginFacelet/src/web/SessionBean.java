@@ -65,6 +65,4 @@ public class SessionBean implements Serializable {
         login = null;
         password = null;
     }
-
-    public void fresh(){}
 }
