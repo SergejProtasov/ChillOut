@@ -4,11 +4,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+<head>
+    <title>Login page</title>
+</head>
+
+<h1><h:outputText value = "Chillout"/></h1><br/><br/>
 <f:view>
-    <h1><h:outputLabel value="Chillout"/><br/><br/></h1>
+    <h:outputText value ="Your login and password"/><br/><br/>
     <h:form>
-    <h:commandButton action="login_page" value = "Start"/>
+            <h:outputText value ="Login:     "/>
+            <h:inputText value ="#{sessionBean.login}" size = "20"/><br/><br/>
+            <h:outputText value ="Password:  "/>
+            <h:inputSecret value ="#{sessionBean.password}" size="20"/><br/><br/>
+            <h:commandButton action ="#{sessionBean.searchUser()}" value = "Enter"/>
     </h:form>
 </f:view>
 </html>

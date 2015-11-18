@@ -17,7 +17,7 @@
         <h:inputText value ="#{workDBBean.firstname}" size = "20"/><br/><br/>
         <h:outputText value ="Lastname:     "/>
         <h:inputSecret value ="#{workDBBean.lastname}" size="20"/><br/><br/>
-        <h:commandButton action = "#{workDBBean.startWorkDel}" value = "Delete"/>
+        <h:commandButton action = "#{workDBBean.deleteUser()}" value = "Delete"/>
         <h:commandButton action = "next_step" value = "Exit"/><br/><br/>
     </h:form>
 
