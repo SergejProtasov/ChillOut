@@ -8,8 +8,8 @@ public class DatabaseConnection {
     private String rPassword = "root";
     private String URL = "jdbc:mysql://localhost:3306/ids";
 
-    private Connection connection;
-    private static DatabaseConnection databaseConnection = new DatabaseConnection();
+    private static Connection connection = null;
+    private static DatabaseConnection databaseConnection = null;
 
     private DatabaseConnection() {
         try {
@@ -23,11 +23,15 @@ public class DatabaseConnection {
         }
     }
 
-    public static DatabaseConnection getInstance(){
-        return databaseConnection;
+    private Connection getConnection(){
+        return connection;
     }
 
-    public Connection getConnection(){
+    public static Connection setConnection() {
+        if(connection == null){
+            databaseConnection = new DatabaseConnection();
+            connection = databaseConnection.getConnection();
+        }
         return connection;
     }
 

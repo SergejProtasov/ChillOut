@@ -5,19 +5,13 @@ import web.dataclasses.Salt;
 import web.dataclasses.User;
 
 import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
-public class SessionBean implements Serializable{
-    private String login;
-    private String password;
+public class SessionBean implements Serializable {
+    private String login = null;
+    private String password = null;
 
-    public SessionBean() {
-            login = "guest";
-            password = "guest";
-    }
+    public SessionBean() {}
 
     public String getLogin() {
         return login;
@@ -35,15 +29,17 @@ public class SessionBean implements Serializable{
         this.login = login;
     }
 
-    private boolean searchUser(String login, String password) {
-        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-        Connection connection = databaseConnection.getConnection();
+    public boolean searchUser() {
+        Connection connection = DatabaseConnection.setConnection();
 
         try {
-            String select = "SELECT * FROM users where login = "+login;
-            Statement statement = connection.createStatement();
+            String select = "SELECT * FROM users where login = ?";
+            System.out.println(select);
+            PreparedStatement statement = connection.prepareStatement(select);
+            statement.setString(1,login);
+            statement.execute();
 
-            ResultSet set = statement.executeQuery(select);
+            ResultSet set = statement.getResultSet();
             User user = null;
             while (set.next()) {
                 user = new User(set.getString("firstName"),set.getString("lastName"),set.getString("login"),set.getString("passwrd"),set.getString("salt"));
@@ -65,13 +61,8 @@ public class SessionBean implements Serializable{
         return false;
     }
 
-    public boolean result(){
-        return searchUser(login,password);
-    }
-
-    public String exit(){
-        login = "guest";
-        password = "guest";
-        return "exit";
+    public void exit(){
+        login = null;
+        password = null;
     }
 }

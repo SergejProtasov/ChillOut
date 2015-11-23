@@ -14,17 +14,18 @@ public class UserDataBean implements Serializable{
     private ArrayList<User> arrayList;
 
     public int amountLine(){
-        fresh();
+        freshTable();
         return arrayList.size();
     }
 
     public String getLine(int num){
-        return (num >= 0 && num < arrayList.size())? arrayList.get(num).getFirstName()+" "+arrayList.get(num).getLastName(): null;
+        return (num >= 0 && num < arrayList.size())?
+                arrayList.get(num).getFirstName()+" "+arrayList.get(num).getLastName():
+                null;
     }
 
-    private ArrayList<User> showUserDB(){
-        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-        Connection connection = databaseConnection.getConnection();
+    private ArrayList<User> freshTable(){
+        Connection connection = DatabaseConnection.setConnection();
 
         try{
             Statement statement = connection.createStatement();
@@ -43,9 +44,5 @@ public class UserDataBean implements Serializable{
             e.printStackTrace();
         }
         return null;
-    }
-
-    public void fresh(){
-        arrayList = showUserDB();
     }
 }

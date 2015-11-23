@@ -25,17 +25,17 @@ public class UserFilter implements Filter{
         if(session!=null){
             SessionBean userAutorisationBean = (SessionBean) session.getAttribute("sessionBean");
             if(userAutorisationBean!=null){
-                if(userAutorisationBean.result()){
+                if(userAutorisationBean.searchUser()){
                     chain.doFilter(request, response);
                 }else{
-                    httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
+                    httpResponse.sendRedirect(httpRequest.getContextPath()+"/index.xhtml");
                 }
             }else{
-                httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
+                httpResponse.sendRedirect(httpRequest.getContextPath()+"/index.xhtml");
             }
         }
         else {
-            httpResponse.sendRedirect(httpRequest.getContextPath()+"/login_page.xhtml");
+            httpResponse.sendRedirect(httpRequest.getContextPath()+"/index.xhtml");
         }
     }
 

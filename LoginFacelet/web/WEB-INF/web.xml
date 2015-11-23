@@ -21,6 +21,6 @@
         <url-pattern>/users/*</url-pattern>
     </filter-mapping>
     <welcome-file-list>
-        <welcome-file>login_page.xhtml</welcome-file>
+        <welcome-file>index.xhtml</welcome-file>
     </welcome-file-list>
 </web-app>

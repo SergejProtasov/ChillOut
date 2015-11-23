@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.security.SecureRandom;
 import java.sql.*;
 
-public class WorkDBBean implements Serializable{
+public class ChangeUserDataBean implements Serializable{
     private String firstname;
     private String lastname;
     private String login;
@@ -72,9 +72,14 @@ public class WorkDBBean implements Serializable{
         preparedStatement.close();
     }
 
-    private boolean addUser(User user){
-        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-        Connection connection = databaseConnection.getConnection();
+    public boolean addUser(){
+        if(!password.equals(confPassword)){
+            return false;
+        }
+
+        User user = new User(firstname,lastname,login,password,null);
+        Connection connection = DatabaseConnection.setConnection();
+
         try {
             insertUser(connection,user);
             return true;
@@ -84,19 +89,8 @@ public class WorkDBBean implements Serializable{
         return false;
     }
 
-    public boolean startWorkAdd(){
-        if(!password.equals(confPassword)){
-            return false;
-        }
-
-        User user = new User(firstname,lastname,login,password,null);
-        return addUser(user);
-
-    }
-
-    private void deleteUser(String firstname, String lastname){
-        DatabaseConnection databaseConnection = DatabaseConnection.getInstance();
-        Connection connection = databaseConnection.getConnection();
+    public void deleteUser(){
+        Connection connection = DatabaseConnection.setConnection();
 
         try{
             String delete = "Delete from users where firstName = ? and lastName = ?";
@@ -110,9 +104,5 @@ public class WorkDBBean implements Serializable{
         catch (SQLException e){
             e.printStackTrace();
         }
-    }
-
-    public void startWorkDel(){
-        deleteUser(firstname,lastname);
     }
 }

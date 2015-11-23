@@ -22,7 +22,7 @@
             <h:inputSecret value = "#{workDBBean.password}" size="20"/><br/><br/>
             <h:outputText value="   Confirm password "/>
             <h:inputSecret value = "#{workDBBean.confPassword}" size="20"/><br/><br/>
-            <h:commandButton action = "#{workDBBean.startWorkAdd}" value = "Ok"/>
+            <h:commandButton action = "#{workDBBean.addUser()}" value = "Ok"/>
             <h:commandButton action = "next_step" value = "Cancel"/>
     </h:form>
 </f:view>
