@@ -31,6 +31,7 @@ public class PacketCatcher{
             = Integer.getInteger(SNAPLEN_KEY, 65536);
 
     private boolean isWork = false;
+    private boolean wait = false;
 
     public boolean isWork() {
         return isWork;
@@ -44,14 +45,20 @@ public class PacketCatcher{
 
     }
 
+    private void demonize() throws IOException {
+        System.out.close();
+        System.in.close();
+    }
+
     private void saveToDB(Packet packet, Timestamp timestamp){
         Connection connection = DatabaseConnection.setConnection();
         try {
-            String insert = "INSERT INTO packets VALUES(?,?)";
+            String insert = "INSERT INTO packets VALUES(?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
             preparedStatement.setString(1,timestamp.toString());
             String s = packet.getHeader().toString();
             preparedStatement.setString(2,s);
+            preparedStatement.setString(2,"0");
 
             preparedStatement.execute();
         } catch (SQLException e) {
@@ -80,13 +87,17 @@ public class PacketCatcher{
                 filter,
                 BpfProgram.BpfCompileMode.OPTIMIZE
         );
-        isWork = true;
 
+        try {
+            demonize();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        isWork = true;
         while (isWork) {
             try {
                 Packet packet = handle.getNextPacketEx();
-                System.out.println(handle.getTimestamp());
-                System.out.println(packet);
                 saveToDB(packet, handle.getTimestamp() );
             } catch (TimeoutException e) {
                 e.printStackTrace();

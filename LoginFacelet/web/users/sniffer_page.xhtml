@@ -4,10 +4,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<head>
+    <title>Sniffer</title>
+</head>
+
 <f:view>
     <h:form>
+        <h:commandButton action = "Start" value = "Start"/>
+        <h:commandButton action = "next_step" value = "Exit"/><br/><br/>
 
-    </h:form>
+
+        <h:outputText value = "Current users:"/><br/><br/>
+        <c:forEach var = "i" begin="0" end="10">
+            <h:outputText value = "#{i+1}"/>
+        </c:forEach>
+</h:form>
 </f:view>
 </html>

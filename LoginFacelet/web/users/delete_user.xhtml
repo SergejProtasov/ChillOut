@@ -23,8 +23,8 @@
 
     <h:outputText value = "Current users:"/><br/><br/>
     <c:forEach var = "i" begin="0" end="#{userDataBean.amountLine()-1}">
-        <h:outputText value = "#{i+1}   "/>
-        <h:outputText value = "#{userDataBean.getLine(i)}"/><br/><br/>
-    </c:forEach>
+    <h:outputText value = "#{i+1}   "/>
+    <h:outputText value = "#{userDataBean.getLine(i)}"/><br/><br/>
+</c:forEach>
 </f:view>
 </html>
