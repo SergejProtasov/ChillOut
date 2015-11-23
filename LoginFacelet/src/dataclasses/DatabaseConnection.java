@@ -4,16 +4,17 @@ import java.sql.*;
 import java.sql.Connection;
 
 public class DatabaseConnection {
-    private String rLogin = "root";
-    private String rPassword = "root";
-    private String URL = "jdbc:mysql://localhost:3306/ids";
-
     private static Connection connection = null;
     private static DatabaseConnection databaseConnection = null;
 
     private DatabaseConnection() {
+        String rLogin = DataProperties.getProp("db.login");
+        String rPassword = DataProperties.getProp("db.password");
+        String URL = DataProperties.getProp("db.host");
+        String driver = DataProperties.getProp("db.driver");
+
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(driver);
             connection = DriverManager.getConnection(URL, rLogin, rPassword);
         } catch (SQLException e) {
             e.printStackTrace();

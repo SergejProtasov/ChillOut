@@ -1,5 +1,6 @@
 package web;
 
+import dataclasses.DataProperties;
 import dataclasses.DatabaseConnection;
 import dataclasses.Salt;
 import dataclasses.User;
@@ -56,7 +57,8 @@ public class ChangeUserDataBean implements Serializable{
     }
 
     private void insertUser(Connection connection, User user) throws SQLException {
-        String insert = "INSERT INTO users VALUES(?,?,?,?,?)";
+        String tUser = DataProperties.getProp("users");
+        String insert = "INSERT INTO "+tUser+" VALUES(?,?,?,?,?)";
         SecureRandom random = new SecureRandom();
         user.setSault(random.nextLong());
         Salt.salting(user);
@@ -77,7 +79,8 @@ public class ChangeUserDataBean implements Serializable{
             return false;
         }
 
-        User user = new User(firstname,lastname,login,password,null);
+        User user = new User();
+        user.setUser(firstname,lastname,login,password,null);
         Connection connection = DatabaseConnection.setConnection();
 
         try {
@@ -92,8 +95,12 @@ public class ChangeUserDataBean implements Serializable{
     public void deleteUser(){
         Connection connection = DatabaseConnection.setConnection();
 
+        String tUser = DataProperties.getProp("users");
+        String column1 = DataProperties.getProp("users.column1");
+        String colimn2 = DataProperties.getProp("users.column2");
+
         try{
-            String delete = "Delete from users where firstName = ? and lastName = ?";
+            String delete = "Delete from "+tUser+" where "+column1+" = ? and "+colimn2+" = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(delete);
             preparedStatement.setString(1,firstname);
             preparedStatement.setString(2,lastname);

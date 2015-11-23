@@ -1,5 +1,6 @@
 package web;
 
+import dataclasses.DataProperties;
 import dataclasses.DatabaseConnection;
 import dataclasses.User;
 
@@ -27,13 +28,18 @@ public class UserDataBean implements Serializable{
     private ArrayList<User> freshTable(){
         Connection connection = DatabaseConnection.setConnection();
 
+        String column1 = DataProperties.getProp("users.column1");
+        String column2 = DataProperties.getProp("users.column2");
+
         try{
             Statement statement = connection.createStatement();
             String query = "SELECT * FROM users";
             ResultSet set =  statement.executeQuery(query);
             ArrayList<User> arrayList = new ArrayList<User>();
+            User user1 = new User();
+
             while(set.next()){
-                User user1 = new User(set.getString("firstName"),set.getString("lastName"), null, null, null);
+                user1.setUser(set.getString(column1),set.getString(column2), null, null, null);
                 arrayList.add(user1);
             }
             set.close();
