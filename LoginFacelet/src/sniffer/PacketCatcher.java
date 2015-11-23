@@ -3,13 +3,17 @@ package sniffer;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.sample.GetNextPacketEx;
-import org.pcap4j.util.NifSelector;
+import dataclasses.DatabaseConnection;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.concurrent.TimeoutException;
 
-public class PacketCatcher {
+public class PacketCatcher{
 
     private static final String COUNT_KEY
             = GetNextPacketEx.class.getName() + ".count";
@@ -36,13 +40,27 @@ public class PacketCatcher {
         isWork = work;
     }
 
-    public void catchPacket() throws PcapNativeException, NotOpenException {
-        String filter = "";
+    private void saveToDB(Packet packet, Timestamp timestamp){
+        Connection connection = DatabaseConnection.setConnection();
+        try {
+            String insert = "INSERT INTO packets VALUES(?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+            preparedStatement.setString(1,timestamp.toString());
+            String s = packet.getHeader().toString();
+            preparedStatement.setString(2,s);
 
+            preparedStatement.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void catchPacket(String argv[]) throws PcapNativeException, NotOpenException {
+        String filter = "";
         PcapNetworkInterface nif;
 
         try {
-            nif = new NifSelector().selectNetworkInterface();
+            nif =  NIFSelector.selectNif();
             if (nif == null) {
                 return;
             }
@@ -50,9 +68,6 @@ public class PacketCatcher {
             e1.printStackTrace();
             return;
         }
-
-
-
 
         PcapHandle handle
                 = nif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
@@ -68,7 +83,9 @@ public class PacketCatcher {
                 Packet packet = handle.getNextPacketEx();
                 System.out.println(handle.getTimestamp());
                 System.out.println(packet);
+                saveToDB(packet, handle.getTimestamp() );
             } catch (TimeoutException e) {
+                e.printStackTrace();
             } catch (EOFException e) {
                 e.printStackTrace();
             }

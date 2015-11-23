@@ -13,7 +13,8 @@
 </head>
 
 <f:view>
-    <h:outputLabel value = "Hello, world"/>
+    <h:outputLabel value = "Hello, "/>
+    <h:outputLabel value = "#{sessionBean.login}"/>
     <h:form>
         <h:commandButton action = "work" value = "Work"/><br/><br/><br/><br/><br/><br/>
         <h2><h:outputText value = "User space:"/><br/><br/></h2>

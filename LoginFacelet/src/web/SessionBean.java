@@ -1,8 +1,8 @@
 package web;
 
-import web.dataclasses.DatabaseConnection;
-import web.dataclasses.Salt;
-import web.dataclasses.User;
+import dataclasses.DatabaseConnection;
+import dataclasses.Salt;
+import dataclasses.User;
 
 import java.io.Serializable;
 import java.sql.*;

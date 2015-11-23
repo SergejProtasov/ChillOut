@@ -1,7 +1,7 @@
 package web;
 
-import web.dataclasses.DatabaseConnection;
-import web.dataclasses.User;
+import dataclasses.DatabaseConnection;
+import dataclasses.User;
 
 import java.io.Serializable;
 import java.sql.Connection;
