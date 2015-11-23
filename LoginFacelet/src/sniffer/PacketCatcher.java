@@ -40,6 +40,10 @@ public class PacketCatcher{
         isWork = work;
     }
 
+    private void claenDB(){
+
+    }
+
     private void saveToDB(Packet packet, Timestamp timestamp){
         Connection connection = DatabaseConnection.setConnection();
         try {
@@ -90,7 +94,6 @@ public class PacketCatcher{
                 e.printStackTrace();
             }
         }
-
         handle.close();
     }
 }
