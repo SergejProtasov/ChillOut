@@ -1,9 +1,9 @@
 package web;
 
-import dataclasses.DataProperties;
-import dataclasses.DatabaseConnection;
-import dataclasses.Salt;
-import dataclasses.User;
+import dataclasses.connections.DataProperties;
+import dataclasses.connections.DatabaseConnection;
+import dataclasses.web.Salt;
+import dataclasses.web.User;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
@@ -96,11 +96,11 @@ public class ChangeUserDataBean implements Serializable{
         Connection connection = DatabaseConnection.setConnection();
 
         String tUser = DataProperties.getProp("users");
-        String column1 = DataProperties.getProp("users.column1");
-        String colimn2 = DataProperties.getProp("users.column2");
+        String frstnm = DataProperties.getProp("users.firstname");
+        String lstnm = DataProperties.getProp("users.lastname");
 
         try{
-            String delete = "Delete from "+tUser+" where "+column1+" = ? and "+colimn2+" = ?";
+            String delete = "Delete from "+tUser+" where "+frstnm+" = ? and "+lstnm+" = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(delete);
             preparedStatement.setString(1,firstname);
             preparedStatement.setString(2,lastname);

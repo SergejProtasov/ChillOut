@@ -1,4 +1,4 @@
-package dataclasses;
+package dataclasses.connections;
 
 import java.sql.*;
 import java.sql.Connection;

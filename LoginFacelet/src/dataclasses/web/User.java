@@ -1,4 +1,4 @@
-package dataclasses;
+package dataclasses.web;
 
 public class User {
     private String firstName;
