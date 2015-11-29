@@ -18,7 +18,7 @@ public class DatabaseConnection {
             connection = DriverManager.getConnection(URL, rLogin, rPassword);
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("dataclasses.DatabaseConnection isn't reached.");
+            System.out.println("DatabaseConnection isn't reached.");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
