@@ -27,61 +27,6 @@ public class PacketCatcher{
 
     private static int count = 0;
 
-    private static void clean(Connection connection, String table, String id) throws SQLException {
-        String idcolumn = DataProperties.getProp("id");
-        try {
-        String delete1 = "Delete from " + table + " where " + idcolumn + " = ?";
-        PreparedStatement preparedStatement1 = connection.prepareStatement(delete1);
-        preparedStatement1.setString(1, id);
-        preparedStatement1.execute();
-        preparedStatement1.close();
-        } catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void cleanDB(){
-        Connection connection = DatabaseConnection.setConnection();
-        String table = DataProperties.getProp("packets");
-        String status = DataProperties.getProp("packets.status");
-        String clnpacket = DataProperties.getProp("packets.clean");
-        String id = DataProperties.getProp("id");
-
-        try{
-            String select = "SELECT "+id+" FROM "+table+" Where "+status+" = "+clnpacket;
-            PreparedStatement preparedStatement = connection.prepareStatement(select);
-            ResultSet set = preparedStatement.executeQuery();
-
-            while(set.next()) {
-                String s = set.getString(id);
-                String packets = DataProperties.getProp("packets");
-                String ipv4 = DataProperties.getProp("ipv4");
-                String ipv6 = DataProperties.getProp("ipv6");
-                String tcp =  DataProperties.getProp("tcp");
-                String udp =  DataProperties.getProp("udp");
-                String arp =  DataProperties.getProp("arp");
-                String data =  DataProperties.getProp("data");
-                clean(connection, packets ,s);
-                clean(connection, ipv4,s);
-                clean(connection, ipv6,s);
-                clean(connection, tcp,s);
-                clean(connection, udp,s);
-                clean(connection, arp,s);
-                clean(connection, data,s);
-            }
-            set.close();
-            preparedStatement.close();
-        }
-        catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void demonize() throws IOException {
-        System.out.close();
-        System.in.close();
-    }
-
     private static void saveToIPv6(Packet packet){
 
     }
@@ -89,10 +34,11 @@ public class PacketCatcher{
     private static void saveToIPv4(Packet packet){
         Connection connection = DatabaseConnection.setConnection();
         String ipv4 = DataProperties.getProp("ipv4");
+        String status = DataProperties.getProp("status.warning");
         int ind;
 
         try {
-            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
+            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
             String s = packet.getHeader().toString();
@@ -121,6 +67,7 @@ public class PacketCatcher{
 
             s = PacketParse.parse(s,preparedStatement,2,10);
             preparedStatement.setString(12,Integer.toString(count));
+            preparedStatement.setString(13,status);
 
             preparedStatement.execute();
             preparedStatement.close();
@@ -151,7 +98,7 @@ public class PacketCatcher{
     private static void saveToDB(Packet packet,Timestamp timestamp){
         Connection connection = DatabaseConnection.setConnection();
         String packets = DataProperties.getProp("packets");
-        String defaultstat = DataProperties.getProp("packets.clean");
+        String defaultstat = DataProperties.getProp("status.warning");
 
         if(count < COUNT) {
             count++;
@@ -217,7 +164,8 @@ public class PacketCatcher{
         );
 
         /*try {
-            demonize();
+            System.out.close();
+            System.in.close();
         } catch (IOException e) {
             e.printStackTrace();
         }*/
@@ -225,9 +173,10 @@ public class PacketCatcher{
         while (true) {
             try {
                 Packet packet = handle.getNextPacketEx();
+                System.out.println(packet);
                 saveToDB(packet, handle.getTimestamp());
             } catch (TimeoutException e) {
-                cleanDB();
+                PacketCleaner.cleanDB();
             } catch (EOFException e) {
                 e.printStackTrace();
                 break;
