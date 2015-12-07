@@ -1,7 +1,6 @@
 package sniffer;
 
 import dataclasses.connections.DataProperties;
-import dataclasses.packets.PacketParse;
 import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.sample.GetNextPacketEx;
@@ -27,11 +26,44 @@ public class PacketCatcher{
 
     private static int count = 0;
 
-    private static void saveToIPv6(Packet packet){
+    private static void saveToIPv6(IpV6Packet packet, int cnt){
+        Connection connection = DatabaseConnection.setConnection();
+        String ipv6 = DataProperties.getProp("ipv6");
+        String status = DataProperties.getProp("status.warning");
 
+        IpV6Packet.IpV6Header header = packet.getHeader();
+
+        try {
+            String insert = "INSERT INTO "+ipv6+" VALUES(?,?,?,?,?,?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+
+            preparedStatement.setString(1,header.getTrafficClass().toString());
+            preparedStatement.setString(2,header.getFlowLabel().toString());
+            preparedStatement.setInt(3,header.getPayloadLengthAsInt());
+            preparedStatement.setString(4, header.getNextHeader().toString());
+            preparedStatement.setInt(5,header.getHopLimit());
+            preparedStatement.setString(6,header.getSrcAddr().toString());
+            preparedStatement.setString(7,header.getDstAddr().toString());
+            preparedStatement.setInt(8,cnt);
+            preparedStatement.setString(9,status);
+
+            preparedStatement.execute();
+            preparedStatement.close();
+
+            Packet next = packet.getPayload();
+            Class clazz = next.getClass();
+            if(clazz.equals(TcpPacket.class)){
+                saveToTCP(next.get(TcpPacket.class),cnt);
+            }
+            if(clazz.equals(UdpPacket.class)){
+                saveToUDP(next.get(UdpPacket.class),cnt);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void saveToIPv4(IpV4Packet packet){
+    private static void saveToIPv4(IpV4Packet packet,int cnt){
         Connection connection = DatabaseConnection.setConnection();
         String ipv4 = DataProperties.getProp("ipv4");
         String status = DataProperties.getProp("status.warning");
@@ -40,26 +72,28 @@ public class PacketCatcher{
 
 
         try {
-            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
-            preparedStatement.setString(1,header.getVersion().toString());
-            preparedStatement.setString(2,Integer.toString(header.getIhl()));
-            preparedStatement.setString(3,"21");
-            preparedStatement.setString(4,Integer.toString(header.getTotalLengthAsInt()));
-            preparedStatement.setString(5,Integer.toString(header.getIdentificationAsInt()));
-            preparedStatement.setString(6,Boolean.toString(header.getReservedFlag()));
-            preparedStatement.setString(7,Boolean.toString(header.getDontFragmentFlag()));
-            preparedStatement.setString(8,Boolean.toString(header.getMoreFragmentFlag()));
-            preparedStatement.setString(9,Integer.toString(header.getFragmentOffset()));
-            preparedStatement.setString(10,Integer.toString(header.getTtl()));
-            preparedStatement.setString(11,header.getProtocol().toString());
-            preparedStatement.setString(12,Integer.toString(header.getHeaderChecksum()));
-            preparedStatement.setString(13,header.getSrcAddr().toString());
-            preparedStatement.setString(14,header.getDstAddr().toString());
-            preparedStatement.setString(15,header.getOptions().toString());
-            preparedStatement.setString(16,Integer.toString(count));
-            preparedStatement.setString(17,status);
+            preparedStatement.setInt(1,header.getIhl());
+            preparedStatement.setInt(2,header.getTotalLengthAsInt());
+            preparedStatement.setInt(3,header.getIdentificationAsInt());
+            preparedStatement.setBoolean(4, header.getReservedFlag());
+            preparedStatement.setBoolean(5,header.getDontFragmentFlag());
+            preparedStatement.setBoolean(6,header.getMoreFragmentFlag());
+            preparedStatement.setInt(7,header.getFragmentOffset());
+            preparedStatement.setInt(8,header.getTtl());
+
+            String s = header.getProtocol().toString();
+            s = s.substring(s.indexOf("(")+1,s.indexOf(")"));
+
+            preparedStatement.setString(9,s);
+            preparedStatement.setInt(10,header.getHeaderChecksum());
+            preparedStatement.setString(11,header.getSrcAddr().toString());
+            preparedStatement.setString(12,header.getDstAddr().toString());
+            preparedStatement.setString(13,header.getOptions().toString());
+            preparedStatement.setInt(14,cnt);
+            preparedStatement.setString(15,status);
 
             preparedStatement.execute();
             preparedStatement.close();
@@ -67,26 +101,138 @@ public class PacketCatcher{
             Packet next = packet.getPayload();
             Class clazz = next.getClass();
             if(clazz.equals(TcpPacket.class)){
-                //saveToTCP(packet.getPayload());
+                saveToTCP(next.get(TcpPacket.class), cnt);
             }
             if(clazz.equals(UdpPacket.class)){
-                //saveToUDP(packet.getPayload());
+                saveToUDP(next.get(UdpPacket.class), cnt);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    private static void saveToUDP(Packet packet){
+    private static void saveToUDP(UdpPacket packet, int cnt){
+        Connection connection = DatabaseConnection.setConnection();
+        String udp = DataProperties.getProp("udp");
+        String status = DataProperties.getProp("status.warning");
 
+        UdpPacket.UdpHeader header = packet.getHeader();
+
+        try {
+            String insert = "INSERT INTO "+udp+" VALUES(?,?,?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+
+            preparedStatement.setInt(1,header.getSrcPort().value());
+            preparedStatement.setInt(2,header.getDstPort().value());
+            preparedStatement.setInt(3,header.getLength());
+            preparedStatement.setInt(4, header.getChecksum());
+            preparedStatement.setInt(5,cnt);
+            preparedStatement.setString(6,status);
+
+            preparedStatement.execute();
+            preparedStatement.close();
+
+            Packet next = packet.getPayload();
+            saveToData(next.get(UnknownPacket.class), cnt);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e){
+                e.printStackTrace();
+        }
     }
 
-    private static void saveToTCP(Packet packet){
+    private static void saveToTCP(TcpPacket packet, int cnt){
+        Connection connection = DatabaseConnection.setConnection();
+        String tcp = DataProperties.getProp("tcp");
+        String status = DataProperties.getProp("status.warning");
 
+        TcpPacket.TcpHeader header = packet.getHeader();
+
+        try {
+            String insert = "INSERT INTO "+tcp+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+
+            preparedStatement.setInt(1,header.getSrcPort().value());
+            preparedStatement.setInt(2,header.getDstPort().value());
+            preparedStatement.setInt(3,header.getSequenceNumber());
+            preparedStatement.setInt(4, header.getAcknowledgmentNumber());
+            preparedStatement.setInt(5,header.getDataOffset());
+            preparedStatement.setInt(6,header.getReserved());
+            preparedStatement.setBoolean(7,header.getUrg());
+            preparedStatement.setBoolean(8,header.getAck());
+            preparedStatement.setBoolean(9,header.getPsh());
+            preparedStatement.setBoolean(10,header.getRst());
+            preparedStatement.setBoolean(11,header.getSyn());
+            preparedStatement.setBoolean(12,header.getFin());
+            preparedStatement.setInt(13, header.getWindow());
+            preparedStatement.setInt(14,header.getChecksum());
+            preparedStatement.setInt(15,header.getUrgentPointer());
+            preparedStatement.setString(16,header.getOptions().toString());
+            preparedStatement.setBytes(17, header.getPadding());
+            preparedStatement.setInt(18,cnt);
+            preparedStatement.setString(19,status);
+
+            preparedStatement.execute();
+            preparedStatement.close();
+
+            Packet next = packet.getPayload();
+            saveToData(next.get(UnknownPacket.class), cnt);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
-    private static void saveToARP(Packet packet){
+    private static void saveToARP(ArpPacket packet, int cnt){
+        Connection connection = DatabaseConnection.setConnection();
+        String arp = DataProperties.getProp("arp");
+        String status = DataProperties.getProp("status.warning");
 
+        ArpPacket.ArpHeader header = packet.getHeader();
+
+        try {
+            String insert = "INSERT INTO "+arp+" VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+
+            preparedStatement.setInt(1,header.getHardwareType().value());
+            preparedStatement.setInt(2,header.getProtocolType().value());
+            preparedStatement.setInt(3,header.getHardwareAddrLength());
+            preparedStatement.setInt(4, header.getProtocolAddrLength());
+            preparedStatement.setString(5,header.getOperation().toString());
+            preparedStatement.setString(6,header.getSrcHardwareAddr().toString());
+            preparedStatement.setString(7,header.getSrcProtocolAddr().toString());
+            preparedStatement.setString(8,header.getDstHardwareAddr().toString());
+            preparedStatement.setString(9,header.getDstProtocolAddr().toString());
+            preparedStatement.setInt(10,cnt);
+            preparedStatement.setString(11,status);
+
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void saveToData(UnknownPacket packet, int cnt){
+        Connection connection = DatabaseConnection.setConnection();
+        String data = DataProperties.getProp("data");
+        String status = DataProperties.getProp("status.warning");
+
+        try {
+            String insert = "INSERT INTO "+data+" VALUES(?,?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(insert);
+
+            int s = packet.toHexString().length();
+            preparedStatement.setString(1,packet.toHexString());
+            preparedStatement.setInt(2,cnt);
+            preparedStatement.setString(3,status);
+
+            preparedStatement.execute();
+            preparedStatement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void saveToDB(EthernetPacket packet, Timestamp timestamp){
@@ -100,6 +246,7 @@ public class PacketCatcher{
         } else{
             count = 1;
         }
+        int cnt = count;
 
         try {
             String insert = "INSERT INTO "+packets+" VALUES(?,?,?,?,?,?)";
@@ -114,7 +261,7 @@ public class PacketCatcher{
             s = s.substring(s.indexOf("(")+1,s.indexOf(")"));
 
             preparedStatement.setString(5,s);
-            preparedStatement.setString(6,Integer.toString(count));
+            preparedStatement.setInt(6,cnt);
 
             preparedStatement.execute();
             preparedStatement.close();
@@ -122,14 +269,16 @@ public class PacketCatcher{
             Packet next = packet.getPayload();
             Class clazz = next.getClass();
             if(clazz.equals(IpV4Packet.class)) {
-               saveToIPv4(next.get(IpV4Packet.class));
+               saveToIPv4(next.get(IpV4Packet.class),cnt);
             }
             if(clazz.equals((IpV6Packet.class))) {
-               // saveToIPv6(packet.getPayload());
+               saveToIPv6(next.get(IpV6Packet.class),cnt);
             }
             if(clazz.equals(ArpPacket.class)){
-                // saveToARP(packet.getPayload());
-                int q = 0;
+                saveToARP(packet.get(ArpPacket.class), cnt);
+            }
+            if(clazz.toString().contains("Icmp")){
+                int g = 0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -168,7 +317,6 @@ public class PacketCatcher{
         while (true) {
             try {
                 Packet packet = handle.getNextPacketEx();
-                //System.out.println(packet);
                 saveToDB(packet.get(EthernetPacket.class), handle.getTimestamp());
             } catch (TimeoutException e) {
                 PacketCleaner.cleanDB();

@@ -20,7 +20,6 @@ public class PacketCleaner {
         String clnpacket = DataProperties.getProp("status.warning");
         for(int i = 0; i < n; i++) {
             try {
-
                 String delete = "DELETE FROM " + tables[i] + " WHERE " + status + " = " + clnpacket;
                 PreparedStatement preparedStatement = connection.prepareStatement(delete);
                 preparedStatement.execute();
