@@ -3,7 +3,7 @@ package sniffer;
 import dataclasses.connections.DataProperties;
 import dataclasses.packets.PacketParse;
 import org.pcap4j.core.*;
-import org.pcap4j.packet.Packet;
+import org.pcap4j.packet.*;
 import org.pcap4j.sample.GetNextPacketEx;
 import dataclasses.connections.DatabaseConnection;
 
@@ -31,51 +31,45 @@ public class PacketCatcher{
 
     }
 
-    private static void saveToIPv4(Packet packet){
+    private static void saveToIPv4(IpV4Packet packet){
         Connection connection = DatabaseConnection.setConnection();
         String ipv4 = DataProperties.getProp("ipv4");
         String status = DataProperties.getProp("status.warning");
-        int ind;
+
+        IpV4Packet.IpV4Header header = packet.getHeader();
+
 
         try {
-            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
-            String s = packet.getHeader().toString();
-            s = s.substring(s.indexOf(": ")+2);
-            s = PacketParse.parse(s,preparedStatement,1,1);
-            s = s.substring(s.indexOf("\n")+2);
-            s = PacketParse.parse(s,preparedStatement,2,2);
-
-            s = s.substring(s.indexOf("= (")+3);
-            for(int i = 0; i < 2; i++){
-                ind = s.indexOf(",");
-                String l = s.substring(0,ind);
-                preparedStatement.setString(4+i,l);
-                s = s.substring(ind+2);
-            }
-            ind = s.indexOf(")");
-            preparedStatement.setString(6,s.substring(0,ind));
-
-            s = PacketParse.parse(s,preparedStatement,2,7);
-
-            s = s.substring(s.indexOf(" (")+2);
-            ind = s.indexOf(")");
-            String type = s.substring(0,ind);
-            preparedStatement.setString(9,type);
-            s = s.substring(s.indexOf(": ")+2);
-
-            s = PacketParse.parse(s,preparedStatement,2,10);
-            preparedStatement.setString(12,Integer.toString(count));
-            preparedStatement.setString(13,status);
+            preparedStatement.setString(1,header.getVersion().toString());
+            preparedStatement.setString(2,Integer.toString(header.getIhl()));
+            preparedStatement.setString(3,"21");
+            preparedStatement.setString(4,Integer.toString(header.getTotalLengthAsInt()));
+            preparedStatement.setString(5,Integer.toString(header.getIdentificationAsInt()));
+            preparedStatement.setString(6,Boolean.toString(header.getReservedFlag()));
+            preparedStatement.setString(7,Boolean.toString(header.getDontFragmentFlag()));
+            preparedStatement.setString(8,Boolean.toString(header.getMoreFragmentFlag()));
+            preparedStatement.setString(9,Integer.toString(header.getFragmentOffset()));
+            preparedStatement.setString(10,Integer.toString(header.getTtl()));
+            preparedStatement.setString(11,header.getProtocol().toString());
+            preparedStatement.setString(12,Integer.toString(header.getHeaderChecksum()));
+            preparedStatement.setString(13,header.getSrcAddr().toString());
+            preparedStatement.setString(14,header.getDstAddr().toString());
+            preparedStatement.setString(15,header.getOptions().toString());
+            preparedStatement.setString(16,Integer.toString(count));
+            preparedStatement.setString(17,status);
 
             preparedStatement.execute();
             preparedStatement.close();
 
-            if(type.equals("TCP")) {
+            Packet next = packet.getPayload();
+            Class clazz = next.getClass();
+            if(clazz.equals(TcpPacket.class)){
                 //saveToTCP(packet.getPayload());
             }
-            if(type.equals("UDP")) {
+            if(clazz.equals(UdpPacket.class)){
                 //saveToUDP(packet.getPayload());
             }
         } catch (SQLException e) {
@@ -95,11 +89,12 @@ public class PacketCatcher{
 
     }
 
-    private static void saveToDB(Packet packet,Timestamp timestamp){
+    private static void saveToDB(EthernetPacket packet, Timestamp timestamp){
         Connection connection = DatabaseConnection.setConnection();
         String packets = DataProperties.getProp("packets");
         String defaultstat = DataProperties.getProp("status.warning");
 
+        EthernetPacket.EthernetHeader header = packet.getHeader();
         if(count < COUNT) {
             count++;
         } else{
@@ -112,27 +107,27 @@ public class PacketCatcher{
 
             preparedStatement.setString(1,timestamp.toString());
             preparedStatement.setString(2,defaultstat);
+            preparedStatement.setString(3,header.getDstAddr().toString());
+            preparedStatement.setString(4,header.getSrcAddr().toString());
 
-            String s = packet.getHeader().toString();
-            s = PacketParse.parse(s,preparedStatement,2,3);
+            String s = header.getType().toString();
+            s = s.substring(s.indexOf("(")+1,s.indexOf(")"));
 
-            s = s.substring(s.indexOf(" (")+2);
-            int ind = s.indexOf(")");
-            String type = s.substring(0,ind);
-
-            preparedStatement.setString(5,type);
+            preparedStatement.setString(5,s);
             preparedStatement.setString(6,Integer.toString(count));
 
             preparedStatement.execute();
             preparedStatement.close();
 
-            if(type.equals("IPv4")) {
-               saveToIPv4(packet.getPayload());
+            Packet next = packet.getPayload();
+            Class clazz = next.getClass();
+            if(clazz.equals(IpV4Packet.class)) {
+               saveToIPv4(next.get(IpV4Packet.class));
             }
-            if(type.equals("IPv6")) {
+            if(clazz.equals((IpV6Packet.class))) {
                // saveToIPv6(packet.getPayload());
             }
-            if(type.equals("ARP")){
+            if(clazz.equals(ArpPacket.class)){
                 // saveToARP(packet.getPayload());
                 int q = 0;
             }
@@ -173,8 +168,8 @@ public class PacketCatcher{
         while (true) {
             try {
                 Packet packet = handle.getNextPacketEx();
-                System.out.println(packet);
-                saveToDB(packet, handle.getTimestamp());
+                //System.out.println(packet);
+                saveToDB(packet.get(EthernetPacket.class), handle.getTimestamp());
             } catch (TimeoutException e) {
                 PacketCleaner.cleanDB();
             } catch (EOFException e) {
