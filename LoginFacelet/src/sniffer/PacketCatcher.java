@@ -5,6 +5,7 @@ import org.pcap4j.core.*;
 import org.pcap4j.packet.*;
 import org.pcap4j.sample.GetNextPacketEx;
 import dataclasses.connections.DatabaseConnection;
+import sniffer.shedule.PacketCleaner;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -72,7 +73,7 @@ public class PacketCatcher{
 
 
         try {
-            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String insert = "INSERT INTO "+ipv4+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
             preparedStatement.setInt(1,header.getIhl());
@@ -82,7 +83,7 @@ public class PacketCatcher{
             preparedStatement.setBoolean(5,header.getDontFragmentFlag());
             preparedStatement.setBoolean(6,header.getMoreFragmentFlag());
             preparedStatement.setInt(7,header.getFragmentOffset());
-            preparedStatement.setInt(8,header.getTtl());
+            preparedStatement.setInt(8,header.getTtlAsInt());
 
             String s = header.getProtocol().toString();
             s = s.substring(s.indexOf("(")+1,s.indexOf(")"));
@@ -91,9 +92,8 @@ public class PacketCatcher{
             preparedStatement.setInt(10,header.getHeaderChecksum());
             preparedStatement.setString(11,header.getSrcAddr().toString());
             preparedStatement.setString(12,header.getDstAddr().toString());
-            preparedStatement.setString(13,header.getOptions().toString());
-            preparedStatement.setInt(14,cnt);
-            preparedStatement.setString(15,status);
+            preparedStatement.setInt(13,cnt);
+            preparedStatement.setString(14,status);
 
             preparedStatement.execute();
             preparedStatement.close();
@@ -122,8 +122,8 @@ public class PacketCatcher{
             String insert = "INSERT INTO "+udp+" VALUES(?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
-            preparedStatement.setInt(1,header.getSrcPort().value());
-            preparedStatement.setInt(2,header.getDstPort().value());
+            preparedStatement.setString(1,header.getSrcPort().valueAsString());
+            preparedStatement.setString(2,header.getDstPort().valueAsString());
             preparedStatement.setInt(3,header.getLength());
             preparedStatement.setInt(4, header.getChecksum());
             preparedStatement.setInt(5,cnt);
@@ -133,7 +133,9 @@ public class PacketCatcher{
             preparedStatement.close();
 
             Packet next = packet.getPayload();
-            saveToData(next.get(UnknownPacket.class), cnt);
+            if(next != null){
+                saveToData(next.get(UnknownPacket.class), cnt);
+            }
             } catch (SQLException e) {
                 e.printStackTrace();
             } catch (NullPointerException e){
@@ -149,13 +151,13 @@ public class PacketCatcher{
         TcpPacket.TcpHeader header = packet.getHeader();
 
         try {
-            String insert = "INSERT INTO "+tcp+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String insert = "INSERT INTO "+tcp+" VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement preparedStatement = connection.prepareStatement(insert);
 
-            preparedStatement.setInt(1,header.getSrcPort().value());
-            preparedStatement.setInt(2,header.getDstPort().value());
-            preparedStatement.setInt(3,header.getSequenceNumber());
-            preparedStatement.setInt(4, header.getAcknowledgmentNumber());
+            preparedStatement.setString(1,header.getSrcPort().valueAsString());
+            preparedStatement.setString(2,header.getDstPort().valueAsString());
+            preparedStatement.setString(3,Long.toString(header.getSequenceNumberAsLong()));
+            preparedStatement.setString(4, Long.toString(header.getAcknowledgmentNumberAsLong()));
             preparedStatement.setInt(5,header.getDataOffset());
             preparedStatement.setInt(6,header.getReserved());
             preparedStatement.setBoolean(7,header.getUrg());
@@ -167,16 +169,17 @@ public class PacketCatcher{
             preparedStatement.setInt(13, header.getWindow());
             preparedStatement.setInt(14,header.getChecksum());
             preparedStatement.setInt(15,header.getUrgentPointer());
-            preparedStatement.setString(16,header.getOptions().toString());
-            preparedStatement.setBytes(17, header.getPadding());
-            preparedStatement.setInt(18,cnt);
-            preparedStatement.setString(19,status);
+            preparedStatement.setBytes(16, header.getPadding());
+            preparedStatement.setInt(17,cnt);
+            preparedStatement.setString(18,status);
 
             preparedStatement.execute();
             preparedStatement.close();
 
             Packet next = packet.getPayload();
-            saveToData(next.get(UnknownPacket.class), cnt);
+            if(next != null) {
+                saveToData(next.get(UnknownPacket.class), cnt);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (NullPointerException e){
@@ -290,7 +293,7 @@ public class PacketCatcher{
         PcapNetworkInterface nif;
 
         try {
-            nif =  NIFSelector.selectNif();
+            nif =  PacketCleaner.NIFSelector.selectNif();
            if (nif == null) {
                 return;
             }
@@ -314,14 +317,14 @@ public class PacketCatcher{
             e.printStackTrace();
         }*/
 
+        PacketCleaner.cleanDB();
         while (true) {
             try {
                 Packet packet = handle.getNextPacketEx();
                 saveToDB(packet.get(EthernetPacket.class), handle.getTimestamp());
             } catch (TimeoutException e) {
-                PacketCleaner.cleanDB();
+                //PacketCleaner.cleanDB();
             } catch (EOFException e) {
-                e.printStackTrace();
                 break;
             }
         }

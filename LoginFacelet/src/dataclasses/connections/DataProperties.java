@@ -19,4 +19,18 @@ public class DataProperties {
         }
         return null;
     }
+
+    public static int getPropInt(String nameProp) {
+        String res = getProp(nameProp);
+
+        try {
+            if (res != null) {
+                return Integer.parseInt(res);
+            }
+        }catch(NumberFormatException e){
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
 }

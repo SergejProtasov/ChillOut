@@ -1,4 +1,4 @@
-package sniffer;
+package sniffer.shedule;
 
 import dataclasses.connections.DataProperties;
 import dataclasses.connections.DatabaseConnection;
