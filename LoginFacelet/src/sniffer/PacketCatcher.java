@@ -280,9 +280,6 @@ public class PacketCatcher{
             if(clazz.equals(ArpPacket.class)){
                 saveToARP(packet.get(ArpPacket.class), cnt);
             }
-            if(clazz.toString().contains("Icmp")){
-                int g = 0;
-            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -293,7 +290,7 @@ public class PacketCatcher{
         PcapNetworkInterface nif;
 
         try {
-            nif =  PacketCleaner.NIFSelector.selectNif();
+            nif =  NIFSelector.selectNif();
            if (nif == null) {
                 return;
             }
